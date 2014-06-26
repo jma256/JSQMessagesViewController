@@ -229,6 +229,8 @@ static void * kJSQMessagesKeyValueObservingContext = &kJSQMessagesKeyValueObserv
                                 options:nil];
     [self jsq_configureMessagesViewController];
     [self jsq_registerForNotifications:YES];
+    
+    
 }
 
 - (void)viewWillAppear:(BOOL)animated
@@ -236,7 +238,7 @@ static void * kJSQMessagesKeyValueObservingContext = &kJSQMessagesKeyValueObserv
     [super viewWillAppear:animated];
     [self.view layoutIfNeeded];
     [self.collectionView.collectionViewLayout invalidateLayoutWithContext:[JSQMessagesCollectionViewFlowLayoutInvalidationContext context]];
-    
+    _shouldScrollToBottomOnAppear = true;
 
     if (self.automaticallyHandlesScrolling && _shouldScrollToBottomOnAppear) {
 		_shouldScrollToBottomOnAppear = false;
