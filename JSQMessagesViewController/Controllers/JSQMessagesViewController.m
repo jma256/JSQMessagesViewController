@@ -302,6 +302,12 @@ static void * kJSQMessagesKeyValueObservingContext = &kJSQMessagesKeyValueObserv
     [self.collectionView.collectionViewLayout invalidateLayoutWithContext:[JSQMessagesCollectionViewFlowLayoutInvalidationContext context]];
 }
 
+- (BOOL)scrollingNecessary
+{
+//    shouldn't scroll if content size is smaller than view size
+    return self.collectionView.collectionViewLayout.collectionViewContentSize.height > self.view.frame.size.height;
+}
+
 #pragma mark - Deprecated
 
 - (BOOL) automaticallyScrollsToMostRecentMessage
@@ -349,10 +355,9 @@ static void * kJSQMessagesKeyValueObservingContext = &kJSQMessagesKeyValueObserv
     [[NSNotificationCenter defaultCenter] postNotificationName:UITextViewTextDidChangeNotification object:textView];
     
     [self.collectionView reloadData];
-    
+    NSLog(@"size: %@", NSStringFromCGSize(self.collectionView.collectionViewLayout.collectionViewContentSize));
 	self.showTypingIndicator = NO;
-
-    if (self.automaticallyHandlesScrolling) {
+    if (self.automaticallyHandlesScrolling && self.scrollingNecessary) {
         [self scrollToBottomAnimated:YES];
     }
 }
@@ -663,7 +668,7 @@ static void * kJSQMessagesKeyValueObservingContext = &kJSQMessagesKeyValueObserv
 			
             [self jsq_adjustInputToolbarForComposerTextViewContentSizeChange:dy];
             [self jsq_updateCollectionViewInsets];
-            if (self.automaticallyHandlesScrolling) {
+            if (self.automaticallyHandlesScrolling && [self scrollingNecessary]) {
 				[self.collectionView setContentOffset:offset animated:NO];
             }
         }
@@ -683,23 +688,26 @@ static void * kJSQMessagesKeyValueObservingContext = &kJSQMessagesKeyValueObserv
 - (void)keyboardWillChangeFrame:(CGRect)keyboardFrame fromFrame:(CGRect)fromFrame
 {
     CGFloat heightFromBottom = CGRectGetHeight(self.collectionView.frame) - CGRectGetMinY(keyboardFrame);
-    
     heightFromBottom = MAX(0.0f, heightFromBottom + self.statusBarChangeInHeight);
-    
-	if (self.automaticallyHandlesScrolling && !self.keyboardController.panInProgress)
-	{
-		CGFloat heightDelta = CGRectGetMinY(fromFrame) - CGRectGetMinY(keyboardFrame);
-
-		CGPoint offset = self.collectionView.contentOffset;
-		offset.y += heightDelta;
-		[self.collectionView setContentOffset:offset animated:NO];
-	}
-	
 	[self jsq_setToolbarBottomLayoutGuideConstant:heightFromBottom];
 }
 
 - (void)keyboardDidChangeFrame:(CGRect)keyboardFrame fromFrame:(CGRect)fromFrame
 {
+    CGFloat heightFromBottom = CGRectGetHeight(self.collectionView.frame) - CGRectGetMinY(keyboardFrame);
+    
+    heightFromBottom = MAX(0.0f, heightFromBottom + self.statusBarChangeInHeight);
+    
+    BOOL scrollingNecessary = self.view.frame.size.height - keyboardFrame.size.height < self.collectionView.collectionViewLayout.collectionViewContentSize.height;
+	if (self.automaticallyHandlesScrolling && scrollingNecessary && !self.keyboardController.panInProgress)
+	{
+		CGFloat heightDelta = CGRectGetMinY(fromFrame) - CGRectGetMinY(keyboardFrame);
+        
+		CGPoint offset = self.collectionView.contentOffset;
+		offset.y += heightDelta;
+		[self scrollToBottomAnimated:YES];
+	}
+	
 }
 
 - (void)jsq_setToolbarBottomLayoutGuideConstant:(CGFloat)constant
