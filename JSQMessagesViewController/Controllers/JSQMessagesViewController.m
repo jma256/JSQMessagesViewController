@@ -248,6 +248,11 @@ static void * kJSQMessagesKeyValueObservingContext = &kJSQMessagesKeyValueObserv
         
     }
     
+    if (self.inputToolbar.contentView.textView.isFirstResponder) {
+        [self.inputToolbar.contentView.textView resignFirstResponder];
+    }
+    [self jsq_setToolbarBottomLayoutGuideConstant:0];
+    
     [self jsq_updateKeyboardTriggerPoint];
 }
 
