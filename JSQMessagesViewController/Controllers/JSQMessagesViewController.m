@@ -239,21 +239,20 @@ static void * kJSQMessagesKeyValueObservingContext = &kJSQMessagesKeyValueObserv
     [self.view layoutIfNeeded];
     [self.collectionView.collectionViewLayout invalidateLayoutWithContext:[JSQMessagesCollectionViewFlowLayoutInvalidationContext context]];
     _shouldScrollToBottomOnAppear = true;
-
+    
     if (self.automaticallyHandlesScrolling && _shouldScrollToBottomOnAppear) {
 		_shouldScrollToBottomOnAppear = false;
 		
-            [self scrollToBottomAnimated:NO];
-            [self.collectionView.collectionViewLayout invalidateLayoutWithContext:[JSQMessagesCollectionViewFlowLayoutInvalidationContext context]];
+        [self scrollToBottomAnimated:NO];
+        [self.collectionView.collectionViewLayout invalidateLayoutWithContext:[JSQMessagesCollectionViewFlowLayoutInvalidationContext context]];
         
     }
-    
     if (self.inputToolbar.contentView.textView.isFirstResponder) {
         [self.inputToolbar.contentView.textView resignFirstResponder];
     }
     [self jsq_setToolbarBottomLayoutGuideConstant:0];
-    
     [self jsq_updateKeyboardTriggerPoint];
+    [self.keyboardController beginListeningForKeyboard];
 }
 
 - (void)viewDidAppear:(BOOL)animated
@@ -261,7 +260,6 @@ static void * kJSQMessagesKeyValueObservingContext = &kJSQMessagesKeyValueObserv
     [super viewDidAppear:animated];
     [self jsq_addObservers];
     [self jsq_addActionToInteractivePopGestureRecognizer:YES];
-    [self.keyboardController beginListeningForKeyboard];
     
     self.collectionView.collectionViewLayout.springinessEnabled = YES;
 }
