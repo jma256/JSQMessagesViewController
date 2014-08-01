@@ -46,14 +46,15 @@ static void * kJSQMessagesKeyValueObservingContext = &kJSQMessagesKeyValueObserv
 
 
 @interface JSQMessagesViewController () <JSQMessagesInputToolbarDelegate,
-                                         JSQMessagesCollectionViewCellDelegate,
-                                         JSQMessagesKeyboardControllerDelegate,
-                                         UITextViewDelegate>
+JSQMessagesCollectionViewCellDelegate,
+JSQMessagesKeyboardControllerDelegate,
+UITextViewDelegate>
 {
 	bool _shouldScrollToBottomOnAppear;
 	bool _lastMessageWasVisible;
 	
 	BOOL _keyboardHidesByPanGesture;
+    BOOL _isObserving;
 }
 
 @property (weak, nonatomic) IBOutlet JSQMessagesCollectionView *collectionView;
@@ -307,7 +308,7 @@ static void * kJSQMessagesKeyValueObservingContext = &kJSQMessagesKeyValueObserv
 
 - (BOOL)scrollingNecessary
 {
-//    shouldn't scroll if content size is smaller than view size
+    //    shouldn't scroll if content size is smaller than view size
     return self.collectionView.collectionViewLayout.collectionViewContentSize.height > self.view.frame.size.height;
 }
 
@@ -665,7 +666,7 @@ static void * kJSQMessagesKeyValueObservingContext = &kJSQMessagesKeyValueObserv
             CGSize newContentSize = [[change objectForKey:NSKeyValueChangeNewKey] CGSizeValue];
             
             CGFloat dy = newContentSize.height - oldContentSize.height;
-        
+            
 			CGPoint offset = self.collectionView.contentOffset;
 			offset.y += dy;
 			
@@ -856,7 +857,7 @@ static void * kJSQMessagesKeyValueObservingContext = &kJSQMessagesKeyValueObserv
 - (void)jsq_addObservers
 {
     [self jsq_removeObservers];
-    
+    _isObserving = YES;
     [self.inputToolbar.contentView.textView addObserver:self
                                              forKeyPath:NSStringFromSelector(@selector(contentSize))
                                                 options:NSKeyValueObservingOptionOld | NSKeyValueObservingOptionNew
@@ -865,12 +866,13 @@ static void * kJSQMessagesKeyValueObservingContext = &kJSQMessagesKeyValueObserv
 
 - (void)jsq_removeObservers
 {
-    @try {
-        [self.inputToolbar.contentView.textView removeObserver:self
-                                                    forKeyPath:NSStringFromSelector(@selector(contentSize))
-                                                       context:kJSQMessagesKeyValueObservingContext];
+    if (!_isObserving) {
+        return;
     }
-    @catch (NSException * __unused exception) { }
+    _isObserving = NO;
+    [self.inputToolbar.contentView.textView removeObserver:self
+                                                forKeyPath:NSStringFromSelector(@selector(contentSize))
+                                                   context:kJSQMessagesKeyValueObservingContext];
 }
 
 - (void)jsq_registerForNotifications:(BOOL)registerForNotifications

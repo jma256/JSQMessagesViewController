@@ -33,12 +33,16 @@ static void * kJSQMessagesInputToolbarKeyValueObservingContext = &kJSQMessagesIn
 
 
 @interface JSQMessagesInputToolbar ()
+{
+    BOOL _isObserving;
+}
 
 - (void)jsq_leftBarButtonPressed:(UIButton *)sender;
 - (void)jsq_rightBarButtonPressed:(UIButton *)sender;
 
 - (void)jsq_addObservers;
 - (void)jsq_removeObservers;
+
 
 @end
 
@@ -137,7 +141,7 @@ static void * kJSQMessagesInputToolbarKeyValueObservingContext = &kJSQMessagesIn
 - (void)jsq_addObservers
 {
     [self jsq_removeObservers];
-    
+    _isObserving = YES;
     [self.contentView addObserver:self
                        forKeyPath:NSStringFromSelector(@selector(leftBarButtonItem))
                           options:0
@@ -151,16 +155,17 @@ static void * kJSQMessagesInputToolbarKeyValueObservingContext = &kJSQMessagesIn
 
 - (void)jsq_removeObservers
 {
-    @try {
-        [_contentView removeObserver:self
-                          forKeyPath:NSStringFromSelector(@selector(leftBarButtonItem))
-                             context:kJSQMessagesInputToolbarKeyValueObservingContext];
-        
-        [_contentView removeObserver:self
-                          forKeyPath:NSStringFromSelector(@selector(rightBarButtonItem))
-                             context:kJSQMessagesInputToolbarKeyValueObservingContext];
+    if (!_isObserving) {
+        return;
     }
-    @catch (NSException *__unused exception) { }
+    _isObserving = NO;
+    [_contentView removeObserver:self
+                      forKeyPath:NSStringFromSelector(@selector(leftBarButtonItem))
+                         context:kJSQMessagesInputToolbarKeyValueObservingContext];
+    
+    [_contentView removeObserver:self
+                      forKeyPath:NSStringFromSelector(@selector(rightBarButtonItem))
+                         context:kJSQMessagesInputToolbarKeyValueObservingContext];
 }
 
 @end
