@@ -34,6 +34,7 @@ typedef void (^JSQAnimationCompletionBlock)(BOOL finished);
 
 @interface JSQMessagesKeyboardController () <UIGestureRecognizerDelegate>
 {
+    BOOL _isKeyboardViewObserver;
 }
 
 @property (weak, nonatomic) UIView *keyboardView;
@@ -102,6 +103,7 @@ typedef void (^JSQAnimationCompletionBlock)(BOOL finished);
     _keyboardView = keyboardView;
     
     if (keyboardView) {
+        _isKeyboardViewObserver = YES;
         [_keyboardView addObserver:self
                         forKeyPath:NSStringFromSelector(@selector(frame))
                            options:(NSKeyValueObservingOptionOld | NSKeyValueObservingOptionNew)
@@ -178,7 +180,7 @@ typedef void (^JSQAnimationCompletionBlock)(BOOL finished);
 {
 	if(_panInProgress)
 		return;
-
+    
     NSDictionary *userInfo = [notification userInfo];
     
     CGRect keyboardBeginFrame = [userInfo[UIKeyboardFrameBeginUserInfoKey] CGRectValue];
@@ -224,7 +226,7 @@ typedef void (^JSQAnimationCompletionBlock)(BOOL finished);
     
     CGRect keyboardBeginFrameConverted = [self.contextView convertRect:keyboardBeginFrame fromView:nil];
     CGRect keyboardEndFrameConverted = [self.contextView convertRect:keyboardEndFrame fromView:nil];
-
+    
     [self.delegate keyboardDidChangeFrame:keyboardEndFrameConverted fromFrame:keyboardBeginFrameConverted];
 	[self jsq_postKeyboardFrameNotificationForFrame:keyboardEndFrameConverted];
 }
@@ -273,12 +275,13 @@ typedef void (^JSQAnimationCompletionBlock)(BOOL finished);
 
 - (void)jsq_removeKeyboardFrameObserver
 {
-    @try {
-        [_keyboardView removeObserver:self
-                           forKeyPath:NSStringFromSelector(@selector(frame))
-                              context:kJSQMessagesKeyboardControllerKeyValueObservingContext];
+    if (!_isKeyboardViewObserver) {
+        return;
     }
-    @catch (NSException * __unused exception) { }
+    _isKeyboardViewObserver = NO;
+    [_keyboardView removeObserver:self
+                       forKeyPath:NSStringFromSelector(@selector(frame))
+                          context:kJSQMessagesKeyboardControllerKeyValueObservingContext];
 }
 
 #pragma mark - Pan gesture recognizer
