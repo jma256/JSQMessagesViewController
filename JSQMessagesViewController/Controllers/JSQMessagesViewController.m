@@ -318,9 +318,16 @@ static void * kJSQMessagesKeyValueObservingContext = &kJSQMessagesKeyValueObserv
     NSInteger items = [self.collectionView numberOfItemsInSection:0];
     
     if (items > 0) {
-        [self.collectionView scrollToItemAtIndexPath:[NSIndexPath indexPathForItem:items - 1 inSection:0]
-                                    atScrollPosition:UICollectionViewScrollPositionTop
-                                            animated:animated];
+        CGFloat contentHeight = self.collectionView.contentSize.height;
+        CGFloat height = self.collectionView.frame.size.height - self.collectionView.contentInset.top - self.collectionView.contentInset.bottom;
+        
+        if (contentHeight > height) {
+            CGFloat additionalOffset = [UIApplication sharedApplication].statusBarFrame.size.height;
+            if (self.navigationController) {
+                additionalOffset += self.navigationController.navigationBar.frame.size.height;
+            }
+            [self.collectionView setContentOffset:CGPointMake(0, contentHeight - height - additionalOffset) animated:YES];
+        }
     }
 }
 
