@@ -329,9 +329,9 @@ static void * kJSQMessagesKeyValueObservingContext = &kJSQMessagesKeyValueObserv
     NSInteger items = [self.collectionView numberOfItemsInSection:0];
     
     if (items > 0) {
-        [self.collectionView scrollToItemAtIndexPath:[NSIndexPath indexPathForItem:items - 1 inSection:0]
-                                    atScrollPosition:UICollectionViewScrollPositionTop
-                                            animated:animated];
+        [self.collectionView layoutIfNeeded];
+        CGRect scrollRect = CGRectMake(0, self.collectionView.contentSize.height - 1.f, 1.f, 1.f);
+        [self.collectionView scrollRectToVisible:scrollRect animated:animated];
     }
 }
 
