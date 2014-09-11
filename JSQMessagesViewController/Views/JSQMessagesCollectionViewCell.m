@@ -202,6 +202,12 @@
     self.messageBubbleImageView.highlighted = selected;
 }
 
+- (void)setBounds:(CGRect)bounds
+{
+    [super setBounds:bounds];
+    self.contentView.frame = bounds;
+}
+
 #pragma mark - Setters
 
 - (void)setBackgroundColor:(UIColor *)backgroundColor
